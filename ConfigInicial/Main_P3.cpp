@@ -1,6 +1,6 @@
 /*
-Previo #3. Proyecciones, Transformaciones y Shaders   |   Echevarria Aguilar Luis Angel
-Fecha de entrega: 17 de febrero de 2026               |   No. Cuenta: 320236235
+Practica #3. Proyecciones, Transformaciones y Shaders   |   Echevarria Aguilar Luis Angel
+Fecha de entrega: 22 de febrero de 2026                 |   No. Cuenta: 320236235
 */
 
 #include<iostream>
@@ -124,66 +124,69 @@ int main() {
 	//};
 	
 
-	// use with Perspective Projection
+	// Arreglo de 36 vértices con colores Pastel base
 	float vertices[] = {
-		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f,0.0f,//Front
-		0.5f, -0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		0.5f,  0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		0.5f,  0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		-0.5f,  0.5f, 0.5f, 1.0f, 0.0f,0.0f,
-		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f,0.0f,
-		
-	    -0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,//Back
-		 0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		 0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		 0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-	    -0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-	    -0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  -0.5f, 0.5f, 0.0f, 0.0f,1.0f,
-      
-		-0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f,1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f,1.0f,
-		-0.5f, -0.5f,  0.5f, 0.0f, 1.0f,1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,1.0f,
-		
-		-0.5f,  0.5f, -0.5f, 1.0f, 0.2f,0.5f,
-		0.5f,  0.5f, -0.5f,  1.0f, 0.2f,0.5f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.2f,0.5f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.2f,0.5f,
-		-0.5f,  0.5f,  0.5f, 1.0f, 0.2f,0.5f,
-		-0.5f,  0.5f, -0.5f, 1.0f, 0.2f,0.5f,
+		// Frontal (Verde Pastel Suave)
+		-0.5f, -0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+		 0.5f, -0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+		 0.5f,  0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+		-0.5f,  0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+		-0.5f, -0.5f,  0.5f,  0.5f, 0.9f, 0.5f,
+
+		// Trasera (Lila/Rosa Suave)
+		-0.5f, -0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+		 0.5f, -0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+		 0.5f,  0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+		 0.5f,  0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+		-0.5f,  0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+		-0.5f, -0.5f, -0.5f, 0.8941f, 0.5137f, 0.8863f,
+
+		// Derecha (Azul Pálido)
+		 0.5f, -0.5f,  0.5f, 0.5137f, 0.5451f, 0.8941f,
+		 0.5f, -0.5f, -0.5f, 0.5137f, 0.5451f, 0.8941f,
+		 0.5f,  0.5f, -0.5f, 0.5137f, 0.5451f, 0.8941f,
+		 0.5f,  0.5f, -0.5f, 0.5137f, 0.5451f, 0.8941f,
+		 0.5f,  0.5f,  0.5f, 0.5137f, 0.5451f, 0.8941f,
+		 0.5f, -0.5f,  0.5f, 0.5137f, 0.5451f, 0.8941f,
+
+		 // Izquierda (Amarillo Khaki)
+		 -0.5f,  0.5f,  0.5f, 0.8941f, 0.8627f, 0.5137f,
+		 -0.5f,  0.5f, -0.5f, 0.8941f, 0.8627f, 0.5137f,
+		 -0.5f, -0.5f, -0.5f, 0.8941f, 0.8627f, 0.5137f,
+		 -0.5f, -0.5f, -0.5f, 0.8941f, 0.8627f, 0.5137f,
+		 -0.5f, -0.5f,  0.5f, 0.8941f, 0.8627f, 0.5137f,
+		 -0.5f,  0.5f,  0.5f, 0.8941f, 0.8627f, 0.5137f,
+
+		 // Inferior (Salmón/Coral)
+		 -0.5f, -0.5f, -0.5f, 0.9412f, 0.5569f, 0.5569f,
+		  0.5f, -0.5f, -0.5f, 0.9412f, 0.5569f, 0.5569f,
+		  0.5f, -0.5f,  0.5f, 0.9412f, 0.5569f, 0.5569f,
+		  0.5f, -0.5f,  0.5f, 0.9412f, 0.5569f, 0.5569f,
+		 -0.5f, -0.5f,  0.5f, 0.9412f, 0.5569f, 0.5569f,
+		 -0.5f, -0.5f, -0.5f, 0.9412f, 0.5569f, 0.5569f,
+
+		 // Superior (Celeste/Turquesa suave)
+		 -0.5f,  0.5f, -0.5f, 0.5020f, 0.8784f, 0.8235f,
+		  0.5f,  0.5f, -0.5f, 0.5020f, 0.8784f, 0.8235f,
+		  0.5f,  0.5f,  0.5f, 0.5020f, 0.8784f, 0.8235f,
+		  0.5f,  0.5f,  0.5f, 0.5020f, 0.8784f, 0.8235f,
+		 -0.5f,  0.5f,  0.5f, 0.5020f, 0.8784f, 0.8235f,
+		 -0.5f,  0.5f, -0.5f, 0.5020f, 0.8784f, 0.8235f,
 	};
-
-
-
 
 	GLuint VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	//glGenBuffers(1, &EBO);
 
-	// Enlazar  Vertex Array Object
+	//Enlazar  Vertex Array Object
 	glBindVertexArray(VAO);
 
 	//2.- Copiamos nuestros arreglo de vertices en un buffer de vertices para que OpenGL lo use
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// 3.Copiamos nuestro arreglo de indices en  un elemento del buffer para que OpenGL lo use
+	//3.Copiamos nuestro arreglo de indices en  un elemento del buffer para que OpenGL lo use
 	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
 
@@ -223,38 +226,64 @@ int main() {
 		glm::mat4 model=glm::mat4(1);
 		glm::mat4 view=glm::mat4(1);
 	
-	    view = glm::translate(view, glm::vec3(0.0f,0.0f,-12.0f));
-		model = glm::rotate( model, 0.5f, glm::vec3( 0.0f, 1.0f, 0.0f ) ); // use to compare orthographic and perspective projection
-		model = glm::scale(model, glm::vec3(2.0f, 3.0f, 1.0f));
+	    view = glm::translate(view, glm::vec3(0.5f,1.0f,-7.0f));
+		//Inclinamos la cámara para ver desde arriba y desde un lado
+		view = glm::rotate(view, glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Rota en X para ver los "techos"
+		view = glm::rotate(view, glm::radians(35.0f), glm::vec3(0.0f,1.0f, 0.0f)); // Rota en Y para ver los laterales
+
+		//model = glm::rotate( model, 0.5f, glm::vec3( 0.0f, 1.0f, 0.0f ) ); // use to compare orthographic and perspective projection
+		//model = glm::scale(model, glm::vec3(2.0f, 3.0f, 1.0f));
 		//view = glm::translate( view, glm::vec3( screenWidth / 2, screenHeight / 9,-800.0f ) ); // use with orthographic projection
 		
 		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
 		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
 		GLint projecLoc = glGetUniformLocation(ourShader.Program, "projection");
+		// Obtener la ubicación de la variable de color en el shader
+		GLint boxTypeLoc = glGetUniformLocation(ourShader.Program, "boxType");
 		
 		glUniformMatrix4fv(projecLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		
 
 		glBindVertexArray(VAO);
+
+		// Caja 1: Base (Rectangular plana)
+		model = glm::translate(model, glm::vec3(-1.0f, -2.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 0.4f, 2.0f)); 
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(boxTypeLoc, 1); // Le decimos a la GPU que mezcle como Caja 1
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Agregar un nuevo elemento
+		// Caja 2: Segundo escalón
 		model = glm::mat4(1);
-		model = glm::translate(model, glm::vec3(5.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 45.0f, glm::vec3(0.0f, 0.0f, 1.0f)); // use to compare orthographic and perspective projection
-		model = glm::scale(model, glm::vec3(8.0f, 1.0f, 5.0f));
+		model = glm::translate(model, glm::vec3(0.5f, -1.1f, 0.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.4f, 1.4f, 1.4f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(boxTypeLoc, 2); // Mezcla como Caja 2
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Caja 3: Tercer escalón
+		model = glm::mat4(1);
+		model = glm::translate(model, glm::vec3(-0.8f, -0.1f, 0.0f));
+		model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 0.6f, 1.2f)); 
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(boxTypeLoc, 3); // Mezcla como Caja 3
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Caja 4: Cima de la escalera
+		model = glm::mat4(1);
+		model = glm::translate(model, glm::vec3(0.4f, 0.8f, 0.0f));
+		model = glm::rotate(model, glm::radians(160.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.2f, 1.2f, 1.2f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(boxTypeLoc, 4); // Mezcla como Caja 4
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
-
-
-
-		
-		
-		
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
