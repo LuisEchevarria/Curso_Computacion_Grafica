@@ -1,6 +1,6 @@
 /*
-	Previo #5. Modelado jerárquico    |    Echevarria Aguilar Luis Angel
-	Fecha de entrega: 03/03/2026      |    No. Cuenta: 320236235
+	Practica #5. Modelado jerárquico    |    Echevarria Aguilar Luis Angel
+	Fecha de entrega: 08/03/2026        |    No. Cuenta: 320236235
 */
 
 #include<iostream>
@@ -26,7 +26,7 @@ movZ = -5.0f,
 rot = 0.0f;
 
 //For model
-float	hombro = 0.0f, codo = 0.0f, muneca = 0.0f, dedo1 = 0.0f, dedo2 = 0.0f;
+float	hombro = 0.0f, codo = 0.0f, muneca = 0.0f, dedo1 = 0.0f, dedo2 = 0.0f, falange1 = 0.0f, falange2 = 0.0f, falange3 = 0.0f;
 
 
 int main() {
@@ -233,25 +233,66 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);//C
 
-		//Model Dedo1 A
-		model = glm::translate(modelTemp, glm::vec3(0.25f, 0.35f, 0.375f));
-		model = glm::rotate(model, glm::radians(dedo1), glm::vec3(0.0f, 0.0, 1.0f)); //dedo1
-		modelTemp = model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 0.3f, 0.25f));
-		color = glm::vec3(0.0f, 1.0f, 1.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);//D
+		////Model Dedo1 A
+		//model = glm::translate(modelTemp, glm::vec3(0.25f, 0.35f, 0.375f));
+		//model = glm::rotate(model, glm::radians(dedo1), glm::vec3(0.0f, 0.0, 1.0f)); //dedo1
+		//modelTemp = model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
+		//model = glm::scale(model, glm::vec3(1.0f, 0.3f, 0.25f));
+		//color = glm::vec3(0.0f, 1.0f, 1.0f);
+		//glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);//D
 
-		//Model Dedo1 B
-		model = glm::translate(modelTemp, glm::vec3(0.5f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(dedo2), glm::vec3(0.0f, 0.0, 1.0f)); //dedo2
-		modelTemp = model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 0.3f, 0.25f));
-		color = glm::vec3(1.0f, 0.0f, 1.0f);
-		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);//E
+		////Model Dedo1 B
+		//model = glm::translate(modelTemp, glm::vec3(0.5f, 0.0f, 0.0f));
+		//model = glm::rotate(model, glm::radians(dedo2), glm::vec3(0.0f, 0.0, 1.0f)); //dedo2
+		//modelTemp = model = glm::translate(model, glm::vec3(0.5f, 0.0f, 0.0f));
+		//model = glm::scale(model, glm::vec3(1.0f, 0.3f, 0.25f));
+		//color = glm::vec3(1.0f, 0.0f, 1.0f);
+		//glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);//E
+
+		glm::mat4 modelPalmBase = modelTemp2; // Tomamos el centro de la palma como base
+
+		for (int i = 0; i < 5; i++) {
+			// Distribuir las garras en círculo (360 / 5 = 72 grados)
+			glm::mat4 modelBaseGarra = glm::rotate(modelPalmBase, glm::radians(i * 72.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+			// Mover la base de la garra al borde exterior frontal de la palma
+			modelBaseGarra = glm::translate(modelBaseGarra, glm::vec3(0.25f, 0.4f, 0.0f));
+
+			// Falange 1
+			glm::mat4 modelF1 = glm::rotate(modelBaseGarra, glm::radians(falange1), glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 modelDrawF1 = glm::translate(modelF1, glm::vec3(0.6f, 0.0f, 0.0f)); // Centro del cubo
+			modelDrawF1 = glm::scale(modelDrawF1, glm::vec3(1.2f, 0.15f, 0.15f));
+			color = glm::vec3(0.0f, 1.0f, 1.0f); // Cyan
+			glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelDrawF1));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			// Falange 2
+			// Nos movemos al final de la Falange 1 (1.2f en X)
+			glm::mat4 modelF2 = glm::translate(modelF1, glm::vec3(1.2f, 0.0f, 0.0f));
+			modelF2 = glm::rotate(modelF2, glm::radians(falange2), glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 modelDrawF2 = glm::translate(modelF2, glm::vec3(0.5f, 0.0f, 0.0f));
+			modelDrawF2 = glm::scale(modelDrawF2, glm::vec3(1.0f, 0.12f, 0.12f));
+			color = glm::vec3(1.0f, 0.0f, 1.0f); // Magenta
+			glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelDrawF2));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			// Falange 3
+			// Nos movemos al final de la Falange 2 (1.0f en X)
+			glm::mat4 modelF3 = glm::translate(modelF2, glm::vec3(1.0f, 0.0f, 0.0f));
+			modelF3 = glm::rotate(modelF3, glm::radians(falange3), glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 modelDrawF3 = glm::translate(modelF3, glm::vec3(0.4f, 0.0f, 0.0f));
+			modelDrawF3 = glm::scale(modelDrawF3, glm::vec3(0.8f, 0.08f, 0.08f));
+			color = glm::vec3(1.0f, 1.0f, 0.0f); // Amarillo
+			glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelDrawF3));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glBindVertexArray(0);
 
@@ -299,14 +340,52 @@ int main() {
 		 muneca += 0.18f;
 	 if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
 		 muneca -= 0.18f;
-	 if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-		 dedo1 += 0.18f;
-	 if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
-		 dedo1 -= 0.18f;
-	 if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-		 dedo2 += 0.18f;
-	 if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-		 dedo2 -= 0.18f;
+
+	 // Límites físicos de la garra
+	 // 1. Guardamos el estado ANTERIOR de las falanges
+	 float prevF1 = falange1;
+	 float prevF2 = falange2;
+	 float prevF3 = falange3;
+
+	 // 2. Aplicamos el movimiento basándonos en las teclas (con topes naturales de la articulación)
+	 // Falange 1
+	 if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) falange1 += 0.18f;
+	 if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) falange1 -= 0.18f;
+	 if (falange1 > 45.0f) falange1 = 45.0f;   // Tope al abrir
+	 if (falange1 < -90.0f) falange1 = -90.0f; // Tope físico al cerrar
+
+	 // Falange 2
+	 if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) falange2 += 0.18f;
+	 if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) falange2 -= 0.18f;
+	 if (falange2 > 15.0f) falange2 = 15.0f;
+	 if (falange2 < -90.0f) falange2 = -90.0f;
+
+	 // Falange 3
+	 if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) falange3 += 0.18f;
+	 if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) falange3 -= 0.18f;
+	 if (falange3 > 15.0f) falange3 = 15.0f;
+	 if (falange3 < -90.0f) falange3 = -90.0f;
+
+	 // 3. Cálculo de colisión geometrica
+	 // Sumamos los ángulos acumulados (convertidos a radianes para la trigonometría)
+	 float rad1 = glm::radians(falange1);
+	 float rad2 = glm::radians(falange1 + falange2);
+	 float rad3 = glm::radians(falange1 + falange2 + falange3);
+
+	 // Calculamos la altura (Y) de cada articulación respecto al centro usando el Seno.
+	 // Nota: Se empieza en 0.4f porque esa es la distancia desde el centro a la que se dibujo la base.
+	 float joint2_Y = 0.4f + (1.2f * sin(rad1));        // Altura del final de la Falange 1
+	 float joint3_Y = joint2_Y + (1.0f * sin(rad2));    // Altura del final de la Falange 2
+	 float tip_Y = joint3_Y + (0.8f * sin(rad3));       // Altura de la pura punta de la garra
+
+	 // 4. Prevención de traspaso
+	 // Verificamos si alguna parte de la garra intentó cruzar el "centro" (Y = 0).
+	 if (joint2_Y < 0.08f || joint3_Y < 0.06f || tip_Y < 0.04f) {
+		 // Si se detecta una colisión se revierte el movimiento del frame.
+		 falange1 = prevF1;
+		 falange2 = prevF2;
+		 falange3 = prevF3;
+	 }
  }
 
 
