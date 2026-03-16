@@ -1,6 +1,6 @@
 /*
-    Previo #6. Carga de modelos   |   Echevarria Aguilar Luis Angel
-    Fecha de entrega: 10/03/2026  |   No. Cuenta: 320236235
+    Practica #6. Carga de modelos   |   Echevarria Aguilar Luis Angel
+    Fecha de entrega: 15/03/2026    |   No. Cuenta: 320236235
 */
 
 
@@ -38,7 +38,7 @@ void DoMovement( );
 
 
 // Camera
-Camera camera( glm::vec3( 0.0f, 0.0f, 1500.0f ) );
+Camera camera(glm::vec3(0.0f, 1.5f, 1.5f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
@@ -100,8 +100,9 @@ int main( )
     Shader shader( "Shader/modelLoading.vs", "Shader/modelLoading.frag" );
     
     // Load models
-    //Model dog((char*)"Models/RedDog.obj");
-    Model avion((char*)"Models/11805_airplane_v2_L2.obj");
+    Model dog((char*)"Models/RedDog.obj");
+    Model butaca((char*)"Models/butaca.obj");
+    Model lentes((char*)"Models/3dGlass.obj");
     glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 2000.0f );
     
   
@@ -128,16 +129,49 @@ int main( )
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-        // Draw the loaded model
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -70.0f, -286.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        avion.Draw(shader);
-        //dog.Draw(shader);
+        // --- 1. Dibujar al Perrito Principal (En primera fila) ---
+        glm::mat4 modelDog = glm::mat4(1.0f);
+        // Lo movemos a la butaca central: X=0.0 (centro), Y=-0.5 (arriba del asiento), Z=-2.8 (apoyado en el respaldo)
+        modelDog = glm::translate(modelDog, glm::vec3(-0.15f, 0.8f, -1.5f));
 
-        /*model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        avion.Draw(shader);*/
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelDog));
+        dog.Draw(shader);
+
+        //Lentes del perro
+
+       // --- 5. Lentes 3D (Ajuste Final de Precisión) ---
+        glm::mat4 modelLentes = glm::mat4(1.0f);
+
+        // 1. POSICIÓN:
+        // X: Cambiamos -1.28f a -0.9f (para mover a la derecha y centrar)
+        // Y: Cambiamos 0.75f a 0.55f (para bajarlos a la altura de los ojos)
+        // Z: Mantenemos 0.15f (o ajusta si se hunden en la cara)
+        modelLentes = glm::translate(modelLentes, glm::vec3(-0.95f, 0.3f, 0.4f));
+
+        // 2. ESCALA: (La que ya te funcionó)
+        modelLentes = glm::scale(modelLentes, glm::vec3(0.05f, 0.05f, 0.05f));
+
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelLentes));
+        lentes.Draw(shader);
+
+        // --- 2. Dibujar las filas de Butacas ---
+        for (int fila = 0; fila < 3; fila++) {
+            for (int asiento = 0; asiento < 5; asiento++) {
+
+                glm::mat4 modelButaca = glm::mat4(1.0f);
+
+                // Aumentamos la separación lateral a 2.0f para que no se asfixien
+                float separacionX = (asiento - 2) * 2.0f;
+                // Aumentamos la separación hacia atrás a -3.0f para dar profundidad (-3, -6, -9)
+                float separacionZ = (fila * -3.0f) - 3.0f;
+
+                // El suelo de las butacas será Y = -2.0f
+                modelButaca = glm::translate(modelButaca, glm::vec3(separacionX, -2.0f, separacionZ));
+
+                glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(modelButaca));
+                butaca.Draw(shader);
+            }
+        }
         
 
         // Swap the buffers
