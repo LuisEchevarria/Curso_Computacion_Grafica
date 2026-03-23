@@ -1,6 +1,6 @@
 /*
-	Previo #7 Texturizado         |   Echevarria Aguilar Luis Angel
-	Fecha de entrega: 17/03/2026  |  No.Cuenta: 320236235
+	Practica #7 Texturizado       |   Echevarria Aguilar Luis Angel
+	Fecha de entrega: 22/03/2026  |  No.Cuenta: 320236235
 */
 
 #include <iostream>
@@ -104,20 +104,53 @@ int main()
 	// Set up vertex data (and buffer(s)) and attribute pointers
 	GLfloat vertices[] =
 	{
-		// Positions            // Colors              // Texture Coords
-		-0.5f, -0.5f, 0.0f,    1.0f, 1.0f,1.0f,		0.0f,0.0f,
-		0.5f, -0.5f, 0.0f,	   1.0f, 1.0f,1.0f,		1.0f,0.0f,
-		0.5f,  0.5f, 0.0f,     1.0f, 1.0f,1.0f,	    1.0f,1.0f,
-		-0.5f,  0.5f, 0.0f,    1.0f, 1.0f,1.0f,		0.0f,1.0f,
+		// Posiciones (x, y, z)  // Colores (r, g, b)  // Coordenadas UV (u, v)
 
-		
+		// Cara Frontal (Verde)
+		-0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.352f, // Abajo-Izquierda
+		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.352f, // Abajo-Derecha
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.618f, // Arriba-Derecha
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.618f, // Arriba-Izquierda
+
+		// Cara Trasera (Amarilla)
+		 0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.107f, 0.352f,
+		-0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.293f, 0.352f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.293f, 0.618f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.107f, 0.618f,
+
+		// Cara Izquierda (Morada)
+		-0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.297f, 0.352f,
+		-0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.483f, 0.352f,
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.483f, 0.618f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.297f, 0.618f,
+
+		// Cara Derecha (Azul)
+	     0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.677f, 0.352f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.863f, 0.352f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.863f, 0.618f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.677f, 0.618f,
+
+		// Cara Superior (Naranja)
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.622f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.622f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.888f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.888f,
+
+		// Cara Inferior (Rosa)
+		-0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.082f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.082f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.673f, 0.348f,
+		-0.5f, -0.5f,  0.5f,    1.0f, 1.0f, 1.0f,    0.487f, 0.348f
 	};
 
 	GLuint indices[] =
-	{  // Note that we start from 0!
-		0,1,3,
-		1,2,3
-	
+	{
+		0, 1, 2,  0, 2, 3,       // Frontal
+		4, 5, 6,  4, 6, 7,       // Trasera
+		8, 9, 10, 8, 10, 11,     // Izquierda
+		12, 13, 14, 12, 14, 15,  // Derecha
+		16, 17, 18, 16, 18, 19,  // Superior
+		20, 21, 22, 20, 22, 23   // Inferior
 	};
 
 	// First, set the container's VAO (and VBO)
@@ -157,7 +190,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	// Diffuse map
 	/*image = stbi_load("images/checker_Tex.png", &textureWidth, &textureHeight, &nrChannels,0);*/
-	image = stbi_load("images/ejemplo1_1.png", &textureWidth, &textureHeight, &nrChannels, 0);
+	image = stbi_load("images/textura_dado.png", &textureWidth, &textureHeight, &nrChannels, 0);
 	glBindTexture(GL_TEXTURE_2D, texture1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -171,6 +204,42 @@ int main()
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(image);
+
+	//PNG CON TRANSPARENCIA lamp.vs
+	/*#version 330 core
+		layout(location = 0) in vec3 position;
+	layout(location = 1) in vec3 inColor;
+	layout(location = 2) in vec2 inTexCoord;
+
+	out vec3 Color;
+	out vec2 TexCoord;
+
+	uniform mat4 model;
+	uniform mat4 view;
+	uniform mat4 projection;
+
+	void main()
+	{
+		gl_Position = projection * view * model * vec4(position, 1.0f);
+		Color = inColor;
+		TexCoord = vec2(inTexCoord.x, inTexCoord.y);
+	}*/
+
+	//PNG CON TRANSPARENCIA lamp.frag
+	/*#version 330 core
+		out vec4 outColor;
+
+	in vec3 Color;
+	in vec2 TexCoord;
+
+	uniform sampler2D ourTexture;
+
+	void main()
+	{
+		outColor = vec4(Color, 1.0) * texture(ourTexture, TexCoord);
+		if (outColor.a < 0.1)
+			discard;
+	}*/
 
 	
 
@@ -196,6 +265,9 @@ int main()
 		view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 model(1);
+		// Agregamos esta línea para que el dado rote sobre los ejes X e Y
+		model = glm::rotate(model, (GLfloat)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
 		// Get the uniform locations
 		GLint modelLoc = glGetUniformLocation(lampShader.Program, "model");
@@ -212,7 +284,7 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		// Draw the light object (using light's vertex attributes)
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
