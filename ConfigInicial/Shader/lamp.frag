@@ -1,9 +1,16 @@
 #version 330 core
-out vec4 FragColor;
-  
+in vec2 TexCoords;
+out vec4 color;
 
+uniform sampler2D texLight;
 
 void main()
 {
-     FragColor = vec4(1.0f);
+    vec4 texColor = texture(texLight, TexCoords);
+    
+    // Si el pixel es transparente, lo descartamos (evita errores visuales en 3D)
+    if(texColor.a < 0.1)
+        discard;
+        
+    color = texColor;
 }
