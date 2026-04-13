@@ -1,6 +1,6 @@
 /*
-	Previo #9. Fuentes de Luz     |   Echevarria Aguilar Luis Angel
-	Fecha de entrega: 07/04/2026  |   No. Cuenta: 320236235
+	Practica #9. Fuentes de Luz   |   Echevarria Aguilar Luis Angel
+	Fecha de entrega: 12/04/2026  |   No. Cuenta: 320236235
 */
 
 #include <iostream>
@@ -48,12 +48,21 @@ bool firstMouse = true;
 glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
 bool active;
 
-// Positions of the point lights
+// 1. La posición base de todo tu modelo (Casa + Fuego)
+// Usamos -0.4f en Y asumiendo que quieres que toque el césped
+glm::vec3 campPos = glm::vec3(0.0f, -0.4f, -2.0f);
+
+// 2. El desplazamiento (Offset) para "atinarle" a los leños
+// Si la fogata está a la derecha de la casa, ponemos un valor positivo en X
+// Si está al frente o atrás, ajustamos Z. El 0.8f en Y es para que la luz suba un poco.
+glm::vec3 fireOffset = glm::vec3(1.4f, 0.2f, 0.0f); // <-- Estos son los valores que tendrás que afinar
+
+// 3. Sumamos ambas posiciones para la luz puntual
 glm::vec3 pointLightPositions[] = {
-	glm::vec3(0.0f,0.0f, 0.0f),
-	glm::vec3(0.0f,0.0f, 0.0f),
-	glm::vec3(0.0f,0.0f,  0.0f),
-	glm::vec3(0.0f,0.0f, 0.0f)
+	campPos + fireOffset, // La luz se posiciona relativa al modelo
+	glm::vec3(0.0f, 0.0f,  0.0f),
+	glm::vec3(0.0f, 0.0f,  0.0f),
+	glm::vec3(0.0f, 0.0f,  0.0f)
 };
 
 float vertices[] = {
@@ -159,9 +168,12 @@ int main()
 	Shader lightingShader("Shader/lighting.vs", "Shader/lighting.frag");
 	Shader lampShader("Shader/lamp.vs", "Shader/lamp.frag");
 	
-	//Model Dog((char*)"Models/RedDog.obj");
-	Model Dog((char*)"Models/ball.obj");
+	Model Dog((char*)"Models/RedDog.obj");
+	//Model Dog((char*)"Models/ball.obj");
 	Model Piso((char*)"Models/piso.obj");
+	Model Campfire((char*)"Models/Campfire/Campfire OBJ.obj");
+	Model Luna((char*)"Models/Moon/Moon_2K.obj");
+	Model Linterna((char*)"Models/Flashlight/Flashlight.obj");
 
 
 
@@ -222,28 +234,63 @@ int main()
 
 
 		// Directional light
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"),0.05f,0.05f,0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.diffuse"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.specular"),0.3f, 0.3f, 0.3f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), -10.0f, -25.0f, 20.0f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"), 0.05f, 0.05f, 0.1f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.diffuse"), 0.2f, 0.2f, 0.3f); // Luz de luna suave
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.specular"), 0.1f, 0.1f, 0.1f);
 
 
-		// Point light 1
-	    glm::vec3 lightColor;
-		lightColor.x= abs(sin(glfwGetTime() *Light1.x));
-		lightColor.y= abs(sin(glfwGetTime() *Light1.y));
-		lightColor.z= sin(glfwGetTime() *Light1.z);
+		// --- Point light 1 (LA FOGATA) ---
 
-		// Point light 1
+		// 1. Calculamos una intensidad que varíe rápidamente entre 0.6 y 1.0
+		// Multiplicamos el tiempo por 5.0f para que el parpadeo sea rápido y errático
+		float intensidad = 0.6f + 0.4f * abs(sin(glfwGetTime() * 5.0f));
+
+		// 2. Definimos el color naranja base (Rojo=1.0, Verde=0.5, Azul=0.0) y lo multiplicamos por la intensidad
+		glm::vec3 colorFogata = glm::vec3(1.0f, 0.5f, 0.0f) * intensidad;
+
+		// 3. Mandamos la posición
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), lightColor.x,lightColor.y, lightColor.z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].diffuse"), lightColor.x,lightColor.y,lightColor.z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].specular"), 1.0f, 0.2f, 0.2f);
+
+		// 4. Mandamos los colores al shader
+		// El ambiente lo bajamos un poco para que las sombras sean profundas
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), colorFogata.x * 0.1f, colorFogata.y * 0.1f, colorFogata.z * 0.1f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].diffuse"), colorFogata.x, colorFogata.y, colorFogata.z);
+		// Hacemos que el reflejo especular en las piedras también sea naranja brillante
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].specular"), colorFogata.x, colorFogata.y, colorFogata.z);
+
+		// 5. Atenuación (¡Con el cero corregido!)
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].linear"), 0.045f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].quadratic"),0.075f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].quadratic"), 0.0075f);
 
 
+		// --- CONFIGURACIÓN DE LA LINTERNA (SPOTLIGHT) ---
+		// 1. Posición: Sobre el suelo, al frente del perro
+		glm::vec3 linternaPos = glm::vec3(0.0f, -0.1f, 2.5f); // Justo enfrente del perro
+
+		// 2. Dirección: Apuntando hacia el centro (el perro está en 0,0,0)
+		// Restamos el destino menos el origen y lo normalizamos
+		glm::vec3 linternaDir = glm::normalize(glm::vec3(0.0f, 0.0f, 0.0f) - linternaPos);
+
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.position"), linternaPos.x, linternaPos.y, linternaPos.z);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.direction"), linternaDir.x, linternaDir.y, linternaDir.z);
+
+		// 3. Colores de la luz (Tono LED frío: alto en azul, un poco menos en rojo/verde)
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.ambient"), 0.0f, 0.0f, 0.0f);
+		// Subimos los valores por encima de 1.0f para forzar el color blanco/frío
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.diffuse"), 1.0f, 1.5f, 2.0f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.specular"), 2.0f, 2.0f, 2.0f);
+
+		// 4. Atenuación (Hacemos que la luz viaje más directo sin perder tanta fuerza)
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.constant"), 1.0f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.linear"), 0.01f); // Menos pérdida en la distancia
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.quadratic"), 0.005f);
+
+		// Un haz de 5 grados es muy cerrado, ideal para una linterna táctica
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.cutOff"), glm::cos(glm::radians(5.0f)));
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(8.0f)));
+		// ------------------------------------------------
 
 		// Point light 2
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
@@ -273,7 +320,7 @@ int main()
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].quadratic"), 0.0f);
 
 		// SpotLight
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.position"), camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
+		/*glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.position"), camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.direction"), camera.GetFront().x, camera.GetFront().y, camera.GetFront().z);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.ambient"), 0.2f, 0.2f, 0.8f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "spotLight.diffuse"), 0.2f, 0.2f, 0.8f);
@@ -282,7 +329,7 @@ int main()
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.linear"), 0.3f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.quadratic"), 0.7f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.cutOff"), glm::cos(glm::radians(12.0f)));
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(18.0f)));
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(18.0f)));*/
 
 		// Set material properties
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 5.0f);
@@ -308,18 +355,66 @@ int main()
 		//Carga de modelo 
         view = camera.GetViewMatrix();	
 		model = glm::mat4(1);
+		model = glm::scale(model, glm::vec3(5.0f, 1.0f, 5.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Piso.Draw(lightingShader);
 
 
 	
 		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
+		//glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
 	    Dog.Draw(lightingShader);
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
+
+		// --- DIBUJO DE LA FOGATA (CAMPFIRE) ---
+		model = glm::mat4(1);
+		model = glm::translate(model, campPos); // Usa solo la base, sin el offset de la luz
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		Campfire.Draw(lightingShader);
+		// --------------------------------------
+
+		// --- DIBUJO DE LA LUNA ---
+		model = glm::mat4(1);
+		// Posicionamos la luna en el cielo
+		glm::vec3 posLuna = glm::vec3(15.0f, 12.0f, -30.0f);
+		model = glm::translate(model, posLuna);
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rota como un trompo (Eje Y)
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), 0.0f, 0.0f, -1.0f);
+
+		// Subimos la intensidad a 2.0 (más allá del blanco) para que la textura literal "destelle"
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"), 1.5f, 1.5f, 1.5f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.diffuse"), 1.5f, 1.5f, 1.5f);
+
+		Luna.Draw(lightingShader);
+
+		// 3. RESTAURACIÓN: Regresamos los valores para que el campamento siga de noche
+		// Devolvemos el vector de luz a la posición de la luna para que ilumine al perro y la tienda
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), -15.0f, -12.0f, 30.0f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"), 0.05f, 0.05f, 0.1f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.diffuse"), 0.2f, 0.2f, 0.3f);
+		// -------------------------
+
+		// --- DIBUJO DE LA LINTERNA ---
+		model = glm::mat4(1);
+		model = glm::translate(model, linternaPos);
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-5.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.05f, 0.05f, 0.05f));
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
+		Linterna.Draw(lightingShader);
+		// -----------------------------
+
+		//glDisable(GL_BLEND);  //Desactiva el canal alfa 
 		glBindVertexArray(0);
 	
 
@@ -340,6 +435,9 @@ int main()
 		// Draw the light object (using light's vertex attributes)
 		for (GLuint i = 0; i < 4; i++)
 		{
+			// Cambiamos el 'i == 0' por 'i < 4' para que ignore todos los cubos blancos
+			if (i < 4) continue;
+
 			model = glm::mat4(1);
 			model = glm::translate(model, pointLightPositions[i]);
 			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
