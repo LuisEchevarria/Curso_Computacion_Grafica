@@ -1,6 +1,6 @@
 /*
-	Previo #10. Animación Básica   |   Echevarria Aguilar Luis Angel
-	Fecha de entrega: 14/04/2026   |   No. Cuenta: 320236235
+	Practica #10. Animación Básica  |   Echevarria Aguilar Luis Angel
+	Fecha de entrega: 19/04/2026    |   No. Cuenta: 320236235
 */
 
 #include <iostream>
@@ -111,6 +111,20 @@ bool AnimBall = false;
 bool AnimVertical = false; // Controla si la animación arriba/abajo está activa
 float movY = 0.0f;         // Altura inicial (aprox. la nariz del perro)
 bool dirUp = true;         // Controla la dirección: true = sube, false = baja
+
+// Variables para Práctica
+bool animPractica = false; // Se enciende y apaga con la tecla P
+float dogAngle = 90.0f;     // Ángulo actual del perro en el círculo
+float ballAngle = -90.0f;    // Ángulo de la pelota en sentido contrario
+float dogPitch = 0.0f;     // Inclinación del perro (cabeza arriba/abajo)
+float dogY = 0.0f;         // Controla la altura del salto del perro
+float jumpAngle = 0.0f;    // Controla el progreso del salto arqueado
+float radioAnim = 1.5f;    // Radio del círculo de pasto
+
+// Banderas de control 
+bool isHitting = false;     // Controla si el perro está haciendo la animación de golpear
+bool pitchUp = true;       // Controla si la cabeza del perro va hacia arriba o hacia abajo
+bool isRecovering = false;  // Controla la estabilización final antes de correr
 
 
 // Deltatime
@@ -285,8 +299,6 @@ int main()
 
 
 		glm::mat4 model(1);
-
-	
 		
 		//Carga de modelo 
         view = camera.GetViewMatrix();	
@@ -294,51 +306,68 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Piso.Draw(lightingShader);
 
+		// --- DIBUJAR AL PERRO ---
 		model = glm::mat4(1);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
+
+		// 1. Traslación circular y salto
+		float dogX = radioAnim * cos(glm::radians(dogAngle));
+		float dogZ = radioAnim * -sin(glm::radians(dogAngle));
+		model = glm::translate(model, glm::vec3(dogX, dogY, dogZ));
+
+		// 2. Rotación para voltearlo hacia adelante
+		model = glm::rotate(model, glm::radians(dogAngle + 180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// 3. Inclinación del cuerpo para golpear pelota
+		model = glm::rotate(model, glm::radians(dogPitch), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Dog.Draw(lightingShader);
 
+
+		// --- DIBUJAR LA PELOTA ---
 		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
 
-		//Aplica la traslación en el eje Y usando movY
-		model = glm::translate(model, glm::vec3(0.0f, movY, 0.0f));
+		// 1. Traslación circular inversa
+		float ballX = radioAnim * cos(glm::radians(ballAngle));
+		float ballZ = radioAnim * -sin(glm::radians(ballAngle));
 
-		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
+		// 2. Calcular la altura de la parábola (el golpe)
+		float currentBallHeight = 0.6f + (abs(sin(glm::radians(ballAngle))) * 1.4f);
+		model = glm::translate(model, glm::vec3(ballX, currentBallHeight, ballZ));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
+		Ball.Draw(lightingShader);
+		glDisable(GL_BLEND);
 		glBindVertexArray(0);
 	
 
-		// Also draw the lamp object, again binding the appropriate shader
-		lampShader.Use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+		//// Also draw the lamp object, again binding the appropriate shader
+		//lampShader.Use();
+		//// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
+		//modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		//viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		//projLoc = glGetUniformLocation(lampShader.Program, "projection");
 
-		// Set matrices
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4(1);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		// Draw the light object (using light's vertex attributes)
-		
-			model = glm::mat4(1);
-			model = glm::translate(model, pointLightPositions[0]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		glBindVertexArray(0);
+		//// Set matrices
+		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		//glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//model = glm::mat4(1);
+		//model = glm::translate(model, lightPos);
+		//model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//// Draw the light object (using light's vertex attributes)
+		//
+		//	model = glm::mat4(1);
+		//	model = glm::translate(model, pointLightPositions[0]);
+		//	model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//	glBindVertexArray(VAO);
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//
+		//glBindVertexArray(0);
 
 
 
@@ -459,42 +488,129 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 	{
 		AnimVertical = !AnimVertical;
 	}
+
+	// Activar/Desactivar la animación de la práctica
+	if (keys[GLFW_KEY_P])
+	{
+		animPractica = !animPractica;
+	}
 }
+
 //void Animation() {
-//	if (AnimBall)
-//	{
-//		rotBall += 0.2f;
-//		printf("%f", rotBall);
+//	if (AnimBall) {
+//		rotBall += 0.2f; // Solo se encarga de la rotación
+//		//printf("%f", rotBall);
 //	}
-//	else
-//	{
-//		//rotBall = 0.0f;
+//
+//	if (AnimVertical) {
+//		// Solo se encarga del movimiento arriba/abajo
+//		float speed = 0.005f;     // Velocidad del rebote
+//
+//		if (dirUp) {
+//			movY += speed;
+//			if (movY >= 1.6f) {   // Límite superior: Altura de la luz ajustada de forma visual aprox.
+//				dirUp = false;
+//			}
+//		}
+//		else {
+//			movY -= speed; 
+//			if (movY <= 0.0f) {   // Límite inferior: Altura de la nariz del perro
+//				dirUp = true;
+//			}
+//		}
+//		//printf("%f", movY);
 //	}
 //}
 
+
+
 void Animation() {
-	if (AnimBall) {
-		rotBall += 0.2f; // Solo se encarga de la rotación
-		//printf("%f", rotBall);
-	}
+	if (animPractica) {
+		float walkSpeed = 120.0f * deltaTime;
 
-	if (AnimVertical) {
-		// Solo se encarga del movimiento arriba/abajo
-		float speed = 0.005f;     // Velocidad del rebote
+		// Velocidades de inclinación y salto
+		float tiltUpSpeed = 200.0f * deltaTime;      // Para subir la cabeza
+		float jumpArcSpeedUp = 450.0f * deltaTime;   // Vuelo hacia arriba
+		float tiltDownSpeed = 425.0f * deltaTime;    // Para el remate
+		float jumpArcSpeedDown = 450.0f * deltaTime; // Para caer
+		float stabilizeSpeed = 125.0f * deltaTime;   // Para estabilizarse
 
-		if (dirUp) {
-			movY += speed;
-			if (movY >= 1.6f) {   // Límite superior: Altura de la luz ajustada de forma visual aprox.
-				dirUp = false;
+		// Movimiento circular del perro y la pelota
+		dogAngle += walkSpeed;
+		ballAngle -= walkSpeed;
+
+		if (isHitting) {
+			// ACCIÓN 1: SUBIR Y LUEGO BAJAR
+			if (pitchUp) {
+				// Sube la cabeza y salta
+				dogPitch += tiltUpSpeed;
+				if (dogPitch > 20.0f) {
+					jumpAngle += jumpArcSpeedUp;
+					if (jumpAngle >= 90.0f) jumpAngle = 90.0f;
+
+					// Salto ajustado a la altura del límite inferior de la pelota
+					dogY = sin(glm::radians(jumpAngle)) * 0.6f;
+				}
+
+				if (dogPitch >= 60.0f) dogPitch = 60.0f;
+
+				// Cuando llega al tope de ambas, cambia de dirección
+				if (dogPitch == 60.0f && jumpAngle == 90.0f) {
+					pitchUp = false;
+				}
+			}
+			else {
+				// Baja la cabeza y cae
+				dogPitch -= tiltDownSpeed;
+				jumpAngle += jumpArcSpeedDown;
+
+				if (jumpAngle >= 180.0f) jumpAngle = 180.0f;
+
+				// Salto ajustado a 0.6f
+				dogY = sin(glm::radians(jumpAngle)) * 0.6f;
+
+				if (dogPitch <= -25.0f) dogPitch = -25.0f;
+
+				// Termina de caer
+				if (dogPitch == -25.0f && jumpAngle == 180.0f) {
+					isHitting = false;
+					isRecovering = true; // Pasa a estabilizarse
+				}
+			}
+		}
+		else if (isRecovering) {
+			// ACCIÓN 2: ESTABILIZARSE
+			dogPitch += stabilizeSpeed;
+			dogY = 0.0f;
+			jumpAngle = 0.0f;
+
+			if (dogPitch >= 0.0f) {
+				dogPitch = 0.0f;
+				isRecovering = false; // Apaga recuperación, vuelve a correr
 			}
 		}
 		else {
-			movY -= speed; 
-			if (movY <= 0.0f) {   // Límite inferior: Altura de la nariz del perro
-				dirUp = true;
-			}
+			// ACCIÓN 3: CORRER NORMAL
+			dogPitch = 0.0f;
+			dogY = 0.0f;
+			jumpAngle = 0.0f;
 		}
-		//printf("%f", movY);
+
+		// 3. DETECTAR IMPACTOS el perro esté en el punto máximo del salto listo para dar el remate hacia abajo.
+		if (dogAngle >= 144.0f && dogAngle < 144.0f + walkSpeed && !isHitting && !isRecovering) {
+			isHitting = true;
+			pitchUp = true;
+		}
+		else if (dogAngle >= 324.0f && dogAngle < 324.0f + walkSpeed && !isHitting && !isRecovering) {
+			isHitting = true;
+			pitchUp = true;
+		}
+
+		// Reiniciar ángulos al dar la vuelta completa para evitar desfasajes
+		if (dogAngle >= 360.0f) {
+			dogAngle -= 360.0f;
+			ballAngle += 360.0f;
+		}
 	}
 }
 
