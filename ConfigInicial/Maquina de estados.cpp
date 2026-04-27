@@ -1,6 +1,6 @@
 /*
-  Previo #11. Animación por maquina de estados | Echevarria Aguilar Luis Angel
-  Fecha de esntrega: 21/04/2026                | No. Cuenta: 320236235
+  Practica #11. Animación por maquina de estados | Echevarria Aguilar Luis Angel
+  Fecha de esntrega: 26/04/2026                  | No. Cuenta: 320236235
 */
 
 #include <iostream>
@@ -110,6 +110,10 @@ bool AnimBall = false;
 bool AnimDog = false;
 float rotDog = 0.0f;
 int dogAnim = 0;
+
+// Variable para controlar la máquina de estados del recorrido
+int pathState = 0;
+
 float FLegs = 0.0f;
 float RLegs = 0.0f;
 float head = 0.0f;
@@ -365,30 +369,30 @@ int main()
 		glBindVertexArray(0);
 	
 
-		// Also draw the lamp object, again binding the appropriate shader
-		lampShader.Use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+		//// Also draw the lamp object, again binding the appropriate shader
+		//lampShader.Use();
+		//// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
+		//modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		//viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		//projLoc = glGetUniformLocation(lampShader.Program, "projection");
 
-		// Set matrices
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4(1);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		// Draw the light object (using light's vertex attributes)
-		
-			model = glm::mat4(1);
-			model = glm::translate(model, pointLightPositions[0]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		glBindVertexArray(0);
+		//// Set matrices
+		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		//glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//model = glm::mat4(1);
+		//model = glm::translate(model, lightPos);
+		//model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//// Draw the light object (using light's vertex attributes)
+		//
+		//	model = glm::mat4(1);
+		//	model = glm::translate(model, pointLightPositions[0]);
+		//	model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//	glBindVertexArray(VAO);
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//
+		//glBindVertexArray(0);
 
 
 
@@ -512,86 +516,117 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 	}
 	
 }
-//void Animation() {
-//	if (AnimBall)
-//	{
-//		rotBall += 0.4f;
-//		//printf("%f", rotBall);
-//	}
-//	
-//	if (AnimDog)
-//	{
-//		rotDog -= 0.6f;
-//		//printf("%f", rotBall);
-//	}
-//	if (dogAnim == 1) {      //Walk Animation
-//		if (!step) {         //State 1
-//			RLegs += 0.3f;
-//			FLegs += 0.3f;
-//			head += 0.3f;
-//			tail += 0.3f;
-//
-//			if (RLegs > 15.0f) {   //Condition
-//				step = true;
-//			}
-//		} else {
-//			RLegs -= 0.3f;
-//			FLegs -= 0.3f;
-//			head -= 0.3f;
-//			tail -= 0.3f;
-//
-//			if (RLegs < -15.0f) {  //Condition
-//				step = false;
-//			}
-//		}
-//
-//		dogPos.z += 0.0001;
-//		//printf("%f", RLegs);
-//	}
-//}
 
 void Animation() {
-	if (dogAnim == 1) {      // Walk Animation
+	if (dogAnim == 1) {      // Animación general activada
 
-		// Condición para detener al perro antes de que termine el piso
-		if (dogPos.z < 2.3f) {  // Ajuste 2.3f dependiendo de dónde termine el plano de forma visual
-
-			if (!step) {         // State 1: Avanzar extremidades
-				// Disminuimos la velocidad de rotación para sincronizar con Z
-				RLegs += 0.05f;
-				FLegs += 0.05f;
-				head += 0.05f;
-				tail += 0.05f;
-
-				if (RLegs >= 15.0f) {   // Condition
-					step = true;
-				}
-			}
-			else {             // State 2: Retroceder extremidades
-				RLegs -= 0.05f;
-				FLegs -= 0.05f;
-				head -= 0.05f;
-				tail -= 0.05f;
-
-				if (RLegs <= -15.0f) {  // Condition
-					step = false;
-				}
-			}
-
-			// Desplazamiento en Z
-			dogPos.z += 0.001f;
-
+		// 1. Animación de las extremidades (Oscilación constante)
+		if (!step) {
+			RLegs += 0.05f;
+			FLegs += 0.05f;
+			head += 0.05f;
+			tail += 0.05f;
+			if (RLegs >= 15.0f) step = true;
 		}
 		else {
-			// El perro llegó al límite del piso, se apaga la animación
-			dogAnim = 0;
+			RLegs -= 0.05f;
+			FLegs -= 0.05f;
+			head -= 0.05f;
+			tail -= 0.05f;
+			if (RLegs <= -15.0f) step = false;
+		}
 
-			//// Regresar las extremidades a su posición neutral
-			//step = false;
-			//RLegs = 0.0f;
-			//FLegs = 0.0f;
-			//head = 0.0f;
-			//tail = 0.0f;
+		// 2. Velocidades de desplazamiento y giro
+		float speed = 0.001f;     // Velocidad de traslación
+		float turnSpeed = 0.1f;   // Velocidad de rotación (Define el radio de la curva)
+
+		// 3. Máquina de Estados del Recorrido
+		switch (pathState) {
+		case 0: // Caminar hacia el primer borde en +Z
+			if (dogPos.z >= 1.7f) { 
+				pathState = 1;
+			}
+			break;
+
+		case 1: // Curva a la izquierda 90 grados para ir a +X
+			dogRot += turnSpeed;
+			if (dogRot >= 90.0f) {
+				dogRot = 90.0f; 
+				pathState = 2;
+			}
+			break;
+
+		case 2: // Caminar por la orilla hacia la esquina 1 en +X
+			if (dogPos.x >= 1.7f) {
+				pathState = 3;
+			}
+			break;
+
+		case 3: // Curva a la izquierda en esquina 1 sumando otros 90 grados para ir a -Z
+			dogRot += turnSpeed;
+			if (dogRot >= 180.0f) {
+				dogRot = 180.0f;
+				pathState = 4;
+			}
+			break;
+
+		case 4: // Caminar por la orilla hacia la esquina 2 en -Z
+			if (dogPos.z <= -1.7f) {
+				pathState = 5;
+			}
+			break;
+
+		case 5: // Curva a la izquierda en esquina 2 sumando otros 90 grados para ir a -X
+			dogRot += turnSpeed;
+			if (dogRot >= 270.0f) {
+				dogRot = 270.0f;
+				pathState = 6;
+			}
+			break;
+
+		case 6: // Caminar por la orilla hacia la tercera esquina en -X
+			if (dogPos.x <= -1.7f) {
+				pathState = 7;
+			}
+			break;
+
+		case 7: // Curva especial en la tercera esquina (Diagonal hacia el centro)
+			// Aumenta la velocidad de giro un 50% (* 1.5f) SOLO en esta curva.
+			dogRot += (turnSpeed * 1.5f);
+
+			if (dogRot >= 405.0f) {
+				dogRot = 405.0f;
+				pathState = 8;
+			}
+			break;
+
+		case 8: // Caminar en diagonal hasta el centro
+			if (dogPos.x >= 0.0f && dogPos.z >= 0.0f) {
+				dogPos.x = 0.0f;     // Lo alineamos perfectamente en el carril central (eje X)
+				pathState = 9;       
+			}
+			break;
+
+		case 9: // Girar sobre su propio eje (pivote) para alinearse
+			// Anula velocidad de traslación en este estado para que el perro se quede fijo en (0,0) mientras rota.
+			
+			speed = 0.0f;
+
+			// Giramos un poco más rápido para darle fluidez al pivote
+			dogRot -= (turnSpeed * 1.5f);
+
+			if (dogRot <= 360.0f) {
+				dogRot = 0.0f;       // Reiniciamos a 0 grados (que es visualmente 360)
+				pathState = 0;       // Se reinicia el ciclo
+			}
+			break;
+		}
+
+		// 4. Aplicar el movimiento continuo
+		// Mientras la animación esté activa, el perro siempre camina "hacia adelante" 
+		if (dogAnim == 1) {
+			dogPos.x += speed * sin(glm::radians(dogRot));
+			dogPos.z += speed * cos(glm::radians(dogRot));
 		}
 	}
 }
