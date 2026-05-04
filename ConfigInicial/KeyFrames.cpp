@@ -1,11 +1,12 @@
 /*
-	Previo #12. Animación por KeyFrames | Echevarria Aguilar Luis Angel
-	Fecha de entrega: 28/04/2026        | No. Cuenta: 320236235
+	Practica #12. Animación por KeyFrames | Echevarria Aguilar Luis Angel
+	Fecha de entrega: 03/05/2026          | No. Cuenta: 320236235
 */
 
 
 #include <iostream>
 #include <cmath>
+#include <fstream> // NUEVO: Librería para leer/escribir archivos .txt
 
 // GLEW
 #include <GL/glew.h>
@@ -42,7 +43,10 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
 
 // Camera
-Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
+//Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
+//Parámetros: Posición(X, Y, Z), Vector Arriba(Up), Yaw (Giro Izq/Der), Pitch (Giro Arriba/Abajo)
+//Camera camera(glm::vec3(1.8f, 0.7f, 2.2f), glm::vec3(0.0f, 1.0f, 0.0f), -130.0f, -15.0f);
+Camera camera(glm::vec3(1.4f, 0.6f, 1.8f), glm::vec3(0.0f, 1.0f, 0.0f), -130.0f, -15.0f);
 GLfloat lastX = WIDTH / 2.0;
 GLfloat lastY = HEIGHT / 2.0;
 bool keys[1024];
@@ -119,13 +123,15 @@ float FRLeg = 0.0f; // Front Right Leg
 float FLLeg = 0.0f; // Front Left Leg
 float BRLeg = 0.0f; // Back Right Leg
 float BLLeg = 0.0f; // Back Left Leg
+
 float bodyPitch = 0.0f; // Controla la inclinación del cuerpo (cadera hacia el piso)
+float dogRoll = 0.0f;   // Controla que el perro ruede sobre su costado (Eje Z)
 
 //KeyFrames
 float dogPosX , dogPosY , dogPosZ  ;
 
-#define MAX_FRAMES 9
-int i_max_steps = 190;
+#define MAX_FRAMES 100  // Subimos el límite para que quepan nuestras animaciones largas
+int i_max_steps = 80;   // Bajamos los ciclos internos para que fluya a buena velocidad
 int i_curr_steps = 0;
 typedef struct _frame {
 	
@@ -153,6 +159,8 @@ typedef struct _frame {
 	float BLLegInc;
 	float bodyPitch;
 	float bodyPitchInc;
+	float dogRoll;       // NUEVO
+	float dogRollInc;    // NUEVO
 
 }FRAME;
 
@@ -180,6 +188,7 @@ void saveFrame(void)
 	KeyFrame[FrameIndex].BRLeg = BRLeg;
 	KeyFrame[FrameIndex].BLLeg = BLLeg;
 	KeyFrame[FrameIndex].bodyPitch = bodyPitch;
+	KeyFrame[FrameIndex].dogRoll = dogRoll; // NUEVO
 
 	FrameIndex++;
 }
@@ -198,6 +207,7 @@ void resetElements(void)
 	BRLeg = KeyFrame[0].BRLeg;
 	BLLeg = KeyFrame[0].BLLeg;
 	bodyPitch = KeyFrame[0].bodyPitch;
+	dogRoll = KeyFrame[0].dogRoll; // NUEVO
 
 	rotDog = KeyFrame[0].rotDog;
 
@@ -217,9 +227,56 @@ void interpolation(void)
 	KeyFrame[playIndex].BRLegInc = (KeyFrame[playIndex + 1].BRLeg - KeyFrame[playIndex].BRLeg) / i_max_steps;
 	KeyFrame[playIndex].BLLegInc = (KeyFrame[playIndex + 1].BLLeg - KeyFrame[playIndex].BLLeg) / i_max_steps;
 	KeyFrame[playIndex].bodyPitchInc = (KeyFrame[playIndex + 1].bodyPitch - KeyFrame[playIndex].bodyPitch) / i_max_steps;
+	KeyFrame[playIndex].dogRollInc = (KeyFrame[playIndex + 1].dogRoll - KeyFrame[playIndex].dogRoll) / i_max_steps; // NUEVO
 
 	KeyFrame[playIndex].rotDogInc = (KeyFrame[playIndex + 1].rotDog - KeyFrame[playIndex].rotDog) / i_max_steps;
 
+}
+
+void saveAnimationToFile(void)
+{
+	std::ofstream file("animacion.txt");
+	if (file.is_open()) {
+		file << FrameIndex << "\n";
+		for (int i = 0; i < FrameIndex; i++) {
+			file << KeyFrame[i].dogPosX << " " << KeyFrame[i].dogPosY << " " << KeyFrame[i].dogPosZ << " "
+				<< KeyFrame[i].rotDog << " " << KeyFrame[i].head << " " << KeyFrame[i].tail << " "
+				<< KeyFrame[i].FRLeg << " " << KeyFrame[i].FLLeg << " " << KeyFrame[i].BRLeg << " "
+				<< KeyFrame[i].BLLeg << " " << KeyFrame[i].bodyPitch << " " << KeyFrame[i].dogRoll << "\n"; // Actualizado
+		}
+		file.close();
+		printf("¡Animacion guardada en animacion.txt exitosamente!\n");
+	}
+	else {
+		printf("Error al abrir el archivo.\n");
+	}
+}
+
+void loadAnimationFromFile(void)
+{
+	std::ifstream file("animacion.txt");
+	if (file.is_open()) {
+		file >> FrameIndex;
+		for (int i = 0; i < FrameIndex; i++) {
+			file >> KeyFrame[i].dogPosX >> KeyFrame[i].dogPosY >> KeyFrame[i].dogPosZ
+				>> KeyFrame[i].rotDog >> KeyFrame[i].head >> KeyFrame[i].tail
+				>> KeyFrame[i].FRLeg >> KeyFrame[i].FLLeg >> KeyFrame[i].BRLeg
+				>> KeyFrame[i].BLLeg >> KeyFrame[i].bodyPitch >> KeyFrame[i].dogRoll; 
+		}
+		file.close();
+		printf("¡Animacion preguardada cargada! Total frames: %d\n", FrameIndex);
+
+		if (FrameIndex > 1) {
+			resetElements();
+			interpolation();
+			play = true;
+			playIndex = 0;
+			i_curr_steps = 0;
+		}
+	}
+	else {
+		printf("No se encontro animacion.txt.\n");
+	}
 }
 
 
@@ -318,8 +375,12 @@ int main()
 		KeyFrame[i].BLLegInc = 0;
 		KeyFrame[i].bodyPitch = 0;
 		KeyFrame[i].bodyPitchInc = 0;
+		KeyFrame[i].dogRoll = 0; // NUEVO
+		KeyFrame[i].dogRollInc = 0; // NUEVO
 	}
 
+	// Cargar la animación al inicio
+	loadAnimationFromFile();
 
 	// First, set the container's VAO (and VBO)
 	GLuint VBO, VAO,EBO;
@@ -455,8 +516,11 @@ int main()
 		//Rotación en el eje X para inclinar la cadera hacia abajo
 		modelTemp = model = glm::rotate(model, glm::radians(bodyPitch), glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
+		//Rotación en el eje Z para hacerse el muertito
+		modelTemp = model = glm::rotate(model, glm::radians(dogRoll), glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		DogBody.Draw(lightingShader);
+
 		//Head
 		model = modelTemp;
 		model = glm::translate(model, glm::vec3(0.0f, 0.093f, 0.208f));
@@ -499,42 +563,42 @@ int main()
 		B_RightLeg.Draw(lightingShader);
 
 
-		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
-		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
-		glBindVertexArray(0);
+		//model = glm::mat4(1);
+		//glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
+		//model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	    //Ball.Draw(lightingShader); 
+		//glDisable(GL_BLEND);  //Desactiva el canal alfa 
+		//glBindVertexArray(0);
 	
 
-		// Also draw the lamp object, again binding the appropriate shader
-		lampShader.Use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
+		//// Also draw the lamp object, again binding the appropriate shader
+		//lampShader.Use();
+		//// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
+		//modelLoc = glGetUniformLocation(lampShader.Program, "model");
+		//viewLoc = glGetUniformLocation(lampShader.Program, "view");
+		//projLoc = glGetUniformLocation(lampShader.Program, "projection");
 
-		// Set matrices
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4(1);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		// Draw the light object (using light's vertex attributes)
-		
-		model = glm::mat4(1);
-		model = glm::translate(model, pointLightPositions[0]);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		glBindVertexArray(0);
+		//// Set matrices
+		//glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		//glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+		//model = glm::mat4(1);
+		//model = glm::translate(model, lightPos);
+		//model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//// Draw the light object (using light's vertex attributes)
+		//
+		//model = glm::mat4(1);
+		//model = glm::translate(model, pointLightPositions[0]);
+		//model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//
+		//glBindVertexArray(0);
 
 		
 		// Swap the screen buffers
@@ -761,6 +825,11 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 			Light1 = glm::vec3(0);//Cuado es solo un valor en los 3 vectores pueden dejar solo una componente
 		}
 	}
+
+	if (keys[GLFW_KEY_ENTER])
+	{
+		saveAnimationToFile(); // Guarda todo lo que haya grabado con K
+	}
 	
 	
 }
@@ -799,6 +868,7 @@ void Animation() {
 			BRLeg += KeyFrame[playIndex].BRLegInc;
 			BLLeg += KeyFrame[playIndex].BLLegInc;
 			bodyPitch += KeyFrame[playIndex].bodyPitchInc;
+			dogRoll += KeyFrame[playIndex].dogRollInc; // NUEVO
 
 			rotDog += KeyFrame[playIndex].rotDogInc;
 
